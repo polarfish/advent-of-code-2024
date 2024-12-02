@@ -20,28 +20,29 @@ public class Day2 extends Day {
 
     @Override
     public String part1(String input) {
-        int safeReports = input.lines()
+        long safeReports = input.lines()
             .map(line -> line.split(" "))
-            .mapToInt(split -> isReportGood(split, -1) ? 1 : 0)
-            .sum();
+            .filter(split -> isReportSafe(split, -1))
+            .count();
 
         return String.valueOf(safeReports);
     }
 
     @Override
     public String part2(String input) {
-        int safeReports = input.lines()
+        long safeReports = input.lines()
             .map(line -> line.split(" "))
-            .mapToInt(split ->
+            .filter(split ->
                 IntStream.range(-1, split.length)
-                    .filter(elementToSkip -> isReportGood(split, elementToSkip))
+                    .filter(elementToSkip -> isReportSafe(split, elementToSkip))
                     .findFirst()
-                    .isPresent() ? 1 : 0).sum();
+                    .isPresent())
+            .count();
 
         return String.valueOf(safeReports);
     }
 
-    private static boolean isReportGood(String[] split, int elementToSkip) {
+    private boolean isReportSafe(String[] split, int elementToSkip) {
         int prev;
         int value = -1;
         int total = 0;
