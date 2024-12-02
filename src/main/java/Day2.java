@@ -1,4 +1,4 @@
-import java.util.stream.IntStream;
+import java.util.Arrays;
 
 public class Day2 extends Day {
 
@@ -21,8 +21,8 @@ public class Day2 extends Day {
     @Override
     public String part1(String input) {
         long safeReports = input.lines()
-            .map(line -> line.split(" "))
-            .filter(split -> isReportSafe(split, -1))
+            .map(line -> Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray())
+            .filter(levels -> findBadLevel(levels, -1) == -1)
             .count();
 
         return String.valueOf(safeReports);
@@ -31,38 +31,56 @@ public class Day2 extends Day {
     @Override
     public String part2(String input) {
         long safeReports = input.lines()
-            .map(line -> line.split(" "))
-            .filter(split ->
-                IntStream.range(-1, split.length)
-                    .filter(elementToSkip -> isReportSafe(split, elementToSkip))
-                    .findFirst()
-                    .isPresent())
+            .map(line -> Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray())
+            .filter(levels -> {
+                int badLevel = findBadLevel(levels, -1);
+                return badLevel == -1
+                    || findBadLevel(levels, badLevel - 2) == -1
+                    || findBadLevel(levels, badLevel - 1) == -1
+                    || findBadLevel(levels, badLevel) == -1;
+            })
             .count();
 
         return String.valueOf(safeReports);
     }
 
-    private boolean isReportSafe(String[] split, int elementToSkip) {
+    private int findBadLevel(int[] levels, int levelToSkip) {
         int prev;
         int value = -1;
-        int total = 0;
-        for (int i = 0; i < split.length; i++) {
-            if (i == elementToSkip) {
+        int totalIncreasing = 0;
+        int totalDecreasing = 0;
+        for (int i = 0; i < levels.length; i++) {
+            if (i == levelToSkip) {
                 continue;
             }
             prev = value;
-            value = Integer.parseInt(split[i]);
+            value = levels[i];
             if (prev == -1) {
                 continue;
             }
-            int delta = value - prev;
-            int deltaAbs = Math.abs(value - prev);
-            if (deltaAbs < 1 || deltaAbs > 3) {
-                break;
+
+            int delta;
+            if (value > prev) {
+                totalIncreasing++;
+                delta = value - prev;
+                if (totalDecreasing > 0) {
+                    return i;
+                }
+            } else if (value < prev) {
+                totalDecreasing++;
+                delta = prev - value;
+                if (totalIncreasing > 0) {
+                    return i;
+                }
+            } else {
+                return i;
             }
-            total += Integer.signum(delta);
+
+            if (delta < 1 || delta > 3) {
+                return i;
+            }
         }
 
-        return Math.abs(total) == split.length - 1 - (elementToSkip == -1 ? 0 : 1);
+        return -1;
     }
 }
