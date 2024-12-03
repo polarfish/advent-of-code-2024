@@ -3,7 +3,7 @@ import java.util.Arrays;
 public class Day2 extends Day {
 
     public static void main(String[] args) {
-        Day2 day = new Day2();  // https://adventofcode.com/2024/day/0
+        Day2 day = new Day2();  // https://adventofcode.com/2024/day/2
 
         String sample = readFile("%s_sample.txt".formatted(day.name()));
         String full = readFile("%s.txt".formatted(day.name()));
