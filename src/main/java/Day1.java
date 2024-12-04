@@ -51,7 +51,7 @@ public class Day1 extends Day {
         input.lines().forEach(line -> {
             String[] split = line.split(" {3}");
             left.add(Integer.valueOf(split[0]));
-            right.compute(Integer.valueOf(split[1]), (k, v) -> v == null ? 1 : v + 1);
+            right.merge(Integer.valueOf(split[1]), 1, Integer::sum);
         });
 
         int result = left.stream().mapToInt(i -> i * right.getOrDefault(i, 0)).sum();
