@@ -6,3 +6,4 @@
 - [Day 2](src/main/java/Day2.java)
 - [Day 3](src/main/java/Day3.java)
 - [Day 4](src/main/java/Day4.java)
+- [Day 5](src/main/java/Day5.java)
