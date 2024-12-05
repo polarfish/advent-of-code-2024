@@ -2,7 +2,9 @@ import static java.lang.Integer.parseInt;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -28,57 +30,31 @@ public class Day5 extends Day {
     @Override
     public String part1(String input) {
         Set<Integer> rules = new HashSet<>();
-        List<int[]> updates = new ArrayList<>();
+        List<List<Integer>> updates = new ArrayList<>();
         extractInput(input, rules, updates);
-
-        int result = 0;
-        for (int[] u : updates) {
-            boolean inOrder = true;
-            top:
-            for (int i = 0; i < u.length - 1; i++) {
-                for (int j = i + 1; j < u.length; j++) {
-                    if (rules.contains(createRuleId(u[j], u[i]))) {
-                        inOrder = false;
-                        break top;
-                    }
-                }
-            }
-            if (inOrder) {
-                result += u[u.length / 2];
-            }
-        }
-
+        Comparator<Integer> pagesComparator = (i1, i2) -> rules.contains(createRuleId(i2, i1)) ? 1 : -1;
+        int result = updates.stream()
+            .filter(pages -> isSorted(pages, pagesComparator))
+            .mapToInt(this::getMiddlePage)
+            .sum();
         return String.valueOf(result);
     }
 
     @Override
     public String part2(String input) {
         Set<Integer> rules = new HashSet<>();
-        List<int[]> updates = new ArrayList<>();
+        List<List<Integer>> updates = new ArrayList<>();
         extractInput(input, rules, updates);
-
-        int result = 0;
-        for (int[] u : updates) {
-            boolean inOrder = true;
-            for (int i = 0; i < u.length - 1; i++) {
-                for (int j = i + 1; j < u.length; j++) {
-                    if (rules.contains(createRuleId(u[j], u[i]))) {
-                        inOrder = false;
-                        int b = u[j];
-                        u[j] = u[i];
-                        u[i] = b;
-                    }
-                }
-            }
-            if (!inOrder) {
-                result += u[u.length / 2];
-            }
-        }
-
+        Comparator<Integer> pagesComparator = (i1, i2) -> rules.contains(createRuleId(i2, i1)) ? 1 : -1;
+        int result = updates.stream()
+            .filter(pages -> !isSorted(pages, pagesComparator))
+            .map(pages -> pages.stream().sorted(pagesComparator).toList())
+            .mapToInt(this::getMiddlePage)
+            .sum();
         return String.valueOf(result);
     }
 
-    private void extractInput(String input, Set<Integer> rules, List<int[]> updates) {
+    private void extractInput(String input, Set<Integer> rules, List<List<Integer>> updates) {
         final boolean[] rulesFinished = {false};
         input.lines().forEach(line -> {
             if (line.isEmpty()) {
@@ -91,12 +67,29 @@ public class Day5 extends Day {
                 rules.add(createRuleId(parseInt(split[0]), parseInt(split[1])));
             } else {
                 String[] split = line.split(",");
-                updates.add(Arrays.stream(split).mapToInt(Integer::parseInt).toArray());
+                updates.add(Arrays.stream(split).map(Integer::valueOf).toList());
             }
         });
     }
 
     private int createRuleId(int beforePage, int afterPage) {
         return beforePage * 100 + afterPage;
+    }
+
+    private boolean isSorted(List<Integer> pages, Comparator<Integer> pagesComparator) {
+        Iterator<Integer> iter = pages.iterator();
+        Integer current, previous = iter.next();
+        while (iter.hasNext()) {
+            current = iter.next();
+            if (pagesComparator.compare(previous, current) > 0) {
+                return false;
+            }
+            previous = current;
+        }
+        return true;
+    }
+
+    private Integer getMiddlePage(List<Integer> pages) {
+        return pages.get(pages.size() / 2);
     }
 }
