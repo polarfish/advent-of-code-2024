@@ -76,7 +76,7 @@ public class Day2 extends Day {
                 return i;
             }
 
-            if (delta < 1 || delta > 3) {
+            if (delta > 3) {
                 return i;
             }
         }
