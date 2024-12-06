@@ -2,6 +2,8 @@ import java.util.Arrays;
 
 public class Day6 extends Day {
 
+    private final int[] turn = {1, 2, 3, 0};
+
     public static void main(String[] args) {
         Day6 day = new Day6();  // https://adventofcode.com/2024/day/6
 
@@ -62,10 +64,6 @@ public class Day6 extends Day {
         return visitsCopy;
     }
 
-    private int turnRight(int dir) {
-        return (dir + 1) % 4;
-    }
-
     private int checkForLoop(char[][] map, int[][] visits, int x, int y, int dir, boolean tryObstruction) {
         int x2;
         int y2;
@@ -109,14 +107,14 @@ public class Day6 extends Day {
             }
 
             if (map[y2][x2] == '#') {
-                dir = (dir + 1) % 4;
+                dir = turn[dir];
             } else {
                 if ((visits[y2][x2] & 1 << dir) > 0) {
                     return result + 1;
                 }
                 if (tryObstruction && visits[y2][x2] == 0) {
                     map[y2][x2] = '#';
-                    result += checkForLoop(map, copyVisits(visits, visitsCopy), x, y, turnRight(dir), false);
+                    result += checkForLoop(map, copyVisits(visits, visitsCopy), x, y, turn[dir], false);
                     map[y2][x2] = '.';
                 }
                 x = x2;
