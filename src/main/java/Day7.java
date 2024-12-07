@@ -1,4 +1,3 @@
-import java.math.BigDecimal;
 import java.util.Arrays;
 
 public class Day7 extends Day {
@@ -36,7 +35,7 @@ public class Day7 extends Day {
             return expected == current;
         }
 
-        if (current >= expected) {
+        if (current > expected) {
             return false;
         }
 
@@ -46,41 +45,39 @@ public class Day7 extends Day {
 
     @Override
     public String part2(String input) {
-        BigDecimal result = input.lines().map(line -> {
+        long result = input.lines().mapToLong(line -> {
             String[] split = line.split(":");
             long expected = Long.parseLong(split[0]);
-            BigDecimal[] values = Arrays.stream(split[1].trim().split(" ")).map(BigDecimal::new)
-                .toArray(BigDecimal[]::new);
-            return solve2(BigDecimal.valueOf(expected), values[0], values, 1) ? expected : 0;
-        }).map(BigDecimal::new).reduce(BigDecimal.ZERO, BigDecimal::add);
-        return result.toString();
+            int[] values = Arrays.stream(split[1].trim().split(" ")).mapToInt(Integer::parseInt).toArray();
+            return solve2(expected, values[0], values, 1) ? expected : 0;
+        }).sum();
+        return String.valueOf(result);
     }
 
-    private boolean solve2(BigDecimal expected, BigDecimal current, BigDecimal[] values, int i) {
+    private boolean solve2(long expected, long current, int[] values, int i) {
         if (i == values.length) {
-            return expected.equals(current);
+            return expected == current;
         }
 
-        if (current.compareTo(expected) > 0) {
+        if (current > expected) {
             return false;
         }
 
-        return solve2(expected, current.add(values[i]), values, i + 1)
-            || solve2(expected, current.multiply(values[i]), values, i + 1)
+        return solve2(expected, current + values[i], values, i + 1)
+            || solve2(expected, current * values[i], values, i + 1)
             || solve2(expected, concat(current, values[i]), values, i + 1);
     }
 
-    BigDecimal concat(BigDecimal a, BigDecimal b) {
-        if (b.equals(BigDecimal.ZERO)) {
-            a = a.multiply(BigDecimal.TEN);
+    long concat(long a, int b) {
+        if (b == 0) {
+            a *= 10;
         } else {
-            BigDecimal tempB = b;
-            while (tempB.compareTo(BigDecimal.ZERO) > 0) {
-                tempB = tempB.divideToIntegralValue(BigDecimal.TEN);
-                a = a.multiply(BigDecimal.TEN);
+            int tempB = b;
+            while (tempB > 0) {
+                tempB /= 10;
+                a *= 10;
             }
         }
-
-        return a.add(b);
+        return a + b;
     }
 }
