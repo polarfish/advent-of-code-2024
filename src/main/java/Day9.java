@@ -41,12 +41,12 @@ public class Day9 extends Day {
             if (i % 2 == 0) {
                 iFile = diskMap[i];
                 while (iFile-- > 0) {
-                    checksum += (long) memoryAddress++ * toFileID(i);
+                    checksum += (long) memoryAddress++ * i / 2;
                 }
             } else {
                 int iSpaces = diskMap[i];
                 while (iSpaces-- > 0) {
-                    checksum += (long) memoryAddress++ * toFileID(j);
+                    checksum += (long) memoryAddress++ * j / 2;
                     if (--jFile == 0) {
                         if (--j == i) {
                             break top;
@@ -58,7 +58,7 @@ public class Day9 extends Day {
         } while (++i < j);
 
         while (jFile-- > 0) {
-            checksum += (long) memoryAddress++ * toFileID(j);
+            checksum += (long) memoryAddress++ * j / 2;
         }
 
         return String.valueOf(checksum);
@@ -66,13 +66,11 @@ public class Day9 extends Day {
 
     static class Space {
 
-        final int size;
         int freeSize;
         private final List<FileBlocks> files = new ArrayList<>();
 
-        public Space(int size) {
-            this.size = size;
-            this.freeSize = size;
+        public Space(int freeSize) {
+            this.freeSize = freeSize;
         }
 
         public void addFile(FileBlocks file) {
@@ -136,14 +134,18 @@ public class Day9 extends Day {
             .mapToObj(i -> new FileBlocks(i / 2, diskMap[i]))
             .toList();
 
+        int firstSpace = 0;
         for (int i = 0; i < files.size(); i++) {
             FileBlocks file = files.get(files.size() - i - 1);
-            for (int j = 0; j < spaces.size() - i; j++) {
+            for (int j = firstSpace; j < spaces.size() - i; j++) {
                 Space space = spaces.get(j);
-                if (space.freeSize() >= file.size) {
+                if (space.freeSize() >= file.size()) {
                     space.addFile(file);
                     file.setMoved(true);
                     break;
+                }
+                if (j == firstSpace && space.freeSize() == 0) {
+                    firstSpace++;
                 }
             }
         }
@@ -177,7 +179,4 @@ public class Day9 extends Day {
         return String.valueOf(checksum);
     }
 
-    private int toFileID(int index) {
-        return index / 2;
-    }
 }
