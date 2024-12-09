@@ -13,7 +13,8 @@ public class AllDaysRunner {
                 new Day5(),
                 new Day6(),
                 new Day7(),
-                new Day8()
+                new Day8(),
+                new Day9()
             ).mapToLong(day -> {
                 System.out.println();
                 return day.run();
