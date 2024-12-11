@@ -1,9 +1,9 @@
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class Day11 extends Day {
 
@@ -26,53 +26,43 @@ public class Day11 extends Day {
 
     @Override
     public String part1(String input) {
-        var memo = initMemo(25);
-        long result = Arrays.stream(input.split(" "))
-            .mapToLong(Long::parseLong)
-            .map(l -> calculateStones(l, 25, memo))
-            .sum();
+        long result = calculateStones(parseInput(input), 25);
 
         return String.valueOf(result);
     }
 
     @Override
     public String part2(String input) {
-        var memo = initMemo(75);
-        long result = Arrays.stream(input.split(" "))
-            .mapToLong(Long::parseLong)
-            .map(l -> calculateStones(l, 75, memo))
-            .sum();
+        long result = calculateStones(parseInput(input), 75);
 
         return String.valueOf(result);
     }
 
-    private static Map<Integer, Map<Long, Long>> initMemo(int steps) {
-        return IntStream.rangeClosed(1, steps).boxed()
-            .collect(Collectors.toMap(Function.identity(), i -> new HashMap<>()));
+    long[] parseInput(String input) {
+        return Arrays.stream(input.split(" ")).mapToLong(Long::parseLong).toArray();
     }
 
-    private long calculateStones(long num, int steps, Map<Integer, Map<Long, Long>> memo) {
-        if (steps == 0) {
-            return 1;
+    private long calculateStones(long[] stones, int steps) {
+        Map<Long, Long> frequency = Arrays.stream(stones).boxed()
+            .collect(Collectors.toMap(Function.identity(), l1 -> 1L));
+        for (int i = 0; i < steps; i++) {
+            Map<Long, Long> newFrequency = new HashMap<>(frequency.size());
+            for (Entry<Long, Long> stone : frequency.entrySet()) {
+                long num = stone.getKey();
+                long count = stone.getValue();
+                long[] split;
+                if (num == 0L) {
+                    newFrequency.merge(1L, count, Long::sum);
+                } else if ((split = split(num)) != null) {
+                    newFrequency.merge(split[0], count, Long::sum);
+                    newFrequency.merge(split[1], count, Long::sum);
+                } else {
+                    newFrequency.merge(num * 2024, count, Long::sum);
+                }
+            }
+            frequency = newFrequency;
         }
-
-        Long cachedResult = memo.get(steps).get(num);
-        if (cachedResult != null) {
-            return cachedResult;
-        }
-
-        long result;
-        long[] split;
-        if (num == 0) {
-            result = calculateStones(1, steps - 1, memo);
-        } else if ((split = split(num)) != null) {
-            result = calculateStones(split[0], steps - 1, memo) + calculateStones(split[1], steps - 1, memo);
-        } else {
-            result = calculateStones(num * 2024, steps - 1, memo);
-        }
-
-        memo.get(steps).put(num, result);
-        return result;
+        return frequency.values().stream().mapToLong(Long::longValue).sum();
     }
 
     private long[] split(long l) {
