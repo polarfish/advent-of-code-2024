@@ -46,7 +46,7 @@ public class Day11 extends Day {
         Map<Long, Long> frequency = Arrays.stream(stones).boxed()
             .collect(Collectors.toMap(Function.identity(), l1 -> 1L));
         for (int i = 0; i < steps; i++) {
-            Map<Long, Long> newFrequency = new HashMap<>(frequency.size());
+            Map<Long, Long> newFrequency = new HashMap<>(frequency.size() * 2);
             for (Entry<Long, Long> stone : frequency.entrySet()) {
                 long num = stone.getKey();
                 long count = stone.getValue();
