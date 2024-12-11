@@ -26,9 +26,10 @@ public class Day11 extends Day {
 
     @Override
     public String part1(String input) {
+        var memo = initMemo(25);
         long result = Arrays.stream(input.split(" "))
             .mapToLong(Long::parseLong)
-            .map(l -> calculateStones(l, 25))
+            .map(l -> calculateStones(l, 25, memo))
             .sum();
 
         return String.valueOf(result);
@@ -36,16 +37,18 @@ public class Day11 extends Day {
 
     @Override
     public String part2(String input) {
+        var memo = initMemo(75);
         long result = Arrays.stream(input.split(" "))
             .mapToLong(Long::parseLong)
-            .map(l -> calculateStones(l, 75))
+            .map(l -> calculateStones(l, 75, memo))
             .sum();
 
         return String.valueOf(result);
     }
 
-    private long calculateStones(long num, int steps) {
-        return calculateStones(num, steps, initMemo(steps));
+    private static Map<Integer, Map<Long, Long>> initMemo(int steps) {
+        return IntStream.rangeClosed(1, steps).boxed()
+            .collect(Collectors.toMap(Function.identity(), i -> new HashMap<>()));
     }
 
     private long calculateStones(long num, int steps, Map<Integer, Map<Long, Long>> memo) {
@@ -70,11 +73,6 @@ public class Day11 extends Day {
 
         memo.get(steps).put(num, result);
         return result;
-    }
-
-    private static Map<Integer, Map<Long, Long>> initMemo(int steps) {
-        return IntStream.rangeClosed(1, steps).boxed()
-            .collect(Collectors.toMap(Function.identity(), i -> new HashMap<>()));
     }
 
     private long[] split(long l) {
