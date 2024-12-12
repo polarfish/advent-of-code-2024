@@ -1,6 +1,3 @@
-import java.util.HashSet;
-import java.util.Set;
-
 public class Day12 extends Day {
 
     public static void main(String[] args) {
@@ -34,12 +31,12 @@ public class Day12 extends Day {
     public String part1(String input) {
         char[][] map = parseMap(input);
 
-        Set<Integer> processed = new HashSet<>(map.length * map[0].length);
+        boolean[][] visited = new boolean[map.length][map[0].length];
         int result = 0;
         int[] region;
         for (int y = 0; y < map.length; y++) {
             for (int x = 0; x < map[0].length; x++) {
-                if ((region = measureRegion(map, x, y, processed)) != null) {
+                if ((region = measureRegion(map, x, y, visited)) != null) {
                     result += region[AREA] * region[PERIMETER];
                 }
             }
@@ -52,12 +49,12 @@ public class Day12 extends Day {
     public String part2(String input) {
         char[][] map = parseMap(input);
 
-        Set<Integer> processed = new HashSet<>(map.length * map[0].length);
+        boolean[][] visited = new boolean[map.length][map[0].length];
         int result = 0;
         int[] region;
         for (int y = 0; y < map.length; y++) {
             for (int x = 0; x < map[0].length; x++) {
-                if ((region = measureRegion(map, x, y, processed)) != null) {
+                if ((region = measureRegion(map, x, y, visited)) != null) {
                     result += region[AREA] * region[SIDES];
                 }
             }
@@ -70,25 +67,25 @@ public class Day12 extends Day {
         return input.lines().map(String::toCharArray).toArray(char[][]::new);
     }
 
-    private int[] measureRegion(char[][] map, int x, int y, Set<Integer> processed) {
-        if (processed.contains(toPointId(x, y))) {
+    private int[] measureRegion(char[][] map, int x, int y, boolean[][] visited) {
+        if (visited[y][x]) {
             return null;
         }
         int[] region = new int[3];
-        measureRegion(map, x, y, processed, map[y][x], region);
+        measureRegion(map, x, y, visited, map[y][x], region);
         return region;
     }
 
-    private void measureRegion(char[][] map, int x, int y, Set<Integer> processed, char plant, int[] region) {
-        if (processed.contains(toPointId(x, y))) {
+    private void measureRegion(char[][] map, int x, int y, boolean[][] visited, char plant, int[] region) {
+        if (visited[y][x]) {
             return;
         }
         region[AREA]++;
-        processed.add(toPointId(x, y));
+        visited[y][x] = true;
 
         // up
         if (y > 0 && map[y - 1][x] == plant) {
-            measureRegion(map, x, y - 1, processed, plant, region);
+            measureRegion(map, x, y - 1, visited, plant, region);
         } else {
             region[PERIMETER]++;
             boolean sideContinuation = x > 0 && map[y][x - 1] == plant && (y == 0 || map[y - 1][x - 1] != plant);
@@ -99,7 +96,7 @@ public class Day12 extends Day {
 
         // right
         if (x < map[0].length - 1 && map[y][x + 1] == plant) {
-            measureRegion(map, x + 1, y, processed, plant, region);
+            measureRegion(map, x + 1, y, visited, plant, region);
         } else {
             region[PERIMETER]++;
             boolean sideContinuation = y > 0 && map[y - 1][x] == plant && (x == map[0].length - 1 || map[y - 1][x + 1] != plant);
@@ -110,7 +107,7 @@ public class Day12 extends Day {
 
         // down
         if (y < map.length - 1 && map[y + 1][x] == plant) {
-            measureRegion(map, x, y + 1, processed, plant, region);
+            measureRegion(map, x, y + 1, visited, plant, region);
         } else {
             region[PERIMETER]++;
             boolean sideContinuation = x < map[0].length - 1 && map[y][x + 1] == plant && (y == map.length - 1 || map[y + 1][x + 1] != plant);
@@ -121,7 +118,7 @@ public class Day12 extends Day {
 
         // left
         if (x > 0 && map[y][x - 1] == plant) {
-            measureRegion(map, x - 1, y, processed, plant, region);
+            measureRegion(map, x - 1, y, visited, plant, region);
         } else {
             region[PERIMETER]++;
             boolean sideContinuation = y < map.length - 1 && map[y + 1][x] == plant && (x == 0 || map[y + 1][x - 1] != plant);
@@ -131,7 +128,4 @@ public class Day12 extends Day {
         }
     }
 
-    private static int toPointId(int x, int y) {
-        return x * 1000 + y;
-    }
 }
