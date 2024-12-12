@@ -4,7 +4,7 @@ import java.util.Set;
 public class Day12 extends Day {
 
     public static void main(String[] args) {
-        Day12 day = new Day12();  // https://adventofcode.com/2024/day/0
+        Day12 day = new Day12();  // https://adventofcode.com/2024/day/12
 
         String sample = readFile("%s_sample.txt".formatted(day.name()));
         String sample2 = readFile("%s_sample2.txt".formatted(day.name()));
