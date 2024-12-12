@@ -28,6 +28,7 @@ public class Day12 extends Day {
 
     private static final int AREA = 0;
     private static final int PERIMETER = 1;
+    private static final int SIDES = 2;
 
     @Override
     public String part1(String input) {
@@ -56,8 +57,8 @@ public class Day12 extends Day {
         int[] region;
         for (int y = 0; y < map.length; y++) {
             for (int x = 0; x < map[0].length; x++) {
-                if ((region = measureRegion2(map, x, y, processed)) != null) {
-                    result += region[AREA] * region[PERIMETER];
+                if ((region = measureRegion(map, x, y, processed)) != null) {
+                    result += region[AREA] * region[SIDES];
                 }
             }
         }
@@ -73,7 +74,7 @@ public class Day12 extends Day {
         if (processed.contains(toPointId(x, y))) {
             return null;
         }
-        int[] region = new int[2];
+        int[] region = new int[3];
         measureRegion(map, x, y, processed, map[y][x], region);
         return region;
     }
@@ -90,6 +91,10 @@ public class Day12 extends Day {
             measureRegion(map, x, y - 1, processed, plant, region);
         } else {
             region[PERIMETER]++;
+            boolean sideContinuation = x > 0 && map[y][x - 1] == plant && (y == 0 || map[y - 1][x - 1] != plant);
+            if (!sideContinuation) {
+                region[SIDES]++;
+            }
         }
 
         // right
@@ -97,6 +102,10 @@ public class Day12 extends Day {
             measureRegion(map, x + 1, y, processed, plant, region);
         } else {
             region[PERIMETER]++;
+            boolean sideContinuation = y > 0 && map[y - 1][x] == plant && (x == map[0].length - 1 || map[y - 1][x + 1] != plant);
+            if (!sideContinuation) {
+                region[SIDES]++;
+            }
         }
 
         // down
@@ -104,6 +113,10 @@ public class Day12 extends Day {
             measureRegion(map, x, y + 1, processed, plant, region);
         } else {
             region[PERIMETER]++;
+            boolean sideContinuation = x < map[0].length - 1 && map[y][x + 1] == plant && (y == map.length - 1 || map[y + 1][x + 1] != plant);
+            if (!sideContinuation) {
+                region[SIDES]++;
+            }
         }
 
         // left
@@ -111,63 +124,9 @@ public class Day12 extends Day {
             measureRegion(map, x - 1, y, processed, plant, region);
         } else {
             region[PERIMETER]++;
-        }
-    }
-
-    private int[] measureRegion2(char[][] map, int x, int y, Set<Integer> processed) {
-        if (processed.contains(toPointId(x, y))) {
-            return null;
-        }
-        int[] region = new int[2];
-        measureRegion2(map, x, y, processed, map[y][x], region);
-        return region;
-    }
-
-    private void measureRegion2(char[][] map, int x, int y, Set<Integer> processed, char plant, int[] region) {
-        if (processed.contains(toPointId(x, y))) {
-            return;
-        }
-        region[AREA]++;
-        processed.add(toPointId(x, y));
-
-        // up
-        if (y > 0 && map[y - 1][x] == plant) {
-            measureRegion2(map, x, y - 1, processed, plant, region);
-        } else {
-            region[PERIMETER]++;
-            if (x > 0 && map[y][x - 1] == plant && (y == 0 || map[y - 1][x - 1] != plant)) {
-                region[PERIMETER]--;
-            }
-        }
-
-        // right
-        if (x < map[0].length - 1 && map[y][x + 1] == plant) {
-            measureRegion2(map, x + 1, y, processed, plant, region);
-        } else {
-            region[PERIMETER]++;
-            if (y > 0 && map[y - 1][x] == plant && (x == map[0].length - 1 || map[y - 1][x + 1] != plant)) {
-                region[PERIMETER]--;
-            }
-        }
-
-        // down
-        if (y < map.length - 1 && map[y + 1][x] == plant) {
-            measureRegion2(map, x, y + 1, processed, plant, region);
-        } else {
-            region[PERIMETER]++;
-            if (x < map[0].length - 1 && map[y][x + 1] == plant && (y == map.length - 1
-                || map[y + 1][x + 1] != plant)) {
-                region[PERIMETER]--;
-            }
-        }
-
-        // left
-        if (x > 0 && map[y][x - 1] == plant) {
-            measureRegion2(map, x - 1, y, processed, plant, region);
-        } else {
-            region[PERIMETER]++;
-            if (y < map.length - 1 && map[y + 1][x] == plant && (x == 0 || map[y + 1][x - 1] != plant)) {
-                region[PERIMETER]--;
+            boolean sideContinuation = y < map.length - 1 && map[y + 1][x] == plant && (x == 0 || map[y + 1][x - 1] != plant);
+            if (!sideContinuation) {
+                region[SIDES]++;
             }
         }
     }
