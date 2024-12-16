@@ -17,3 +17,4 @@
 - [Day 13](src/main/java/Day13.java)
 - [Day 14](src/main/java/Day14.java)
 - [Day 15](src/main/java/Day15.java)
+- [Day 16](src/main/java/Day16.java)
