@@ -57,7 +57,7 @@ public class Day16 extends Day {
             int x = s[X];
             int y = s[Y];
             int dir = s[DIR];
-            visited.add(toDirectedCoordId(x, y, dir));
+            visited.add(State.directedCoordId(x, y, dir));
             int score = s[SCORE];
             if (map[y][x] == 'E') {
                 break;
@@ -68,19 +68,19 @@ public class Day16 extends Day {
             // forward
             x2 = nextX(x, dir);
             y2 = nextY(y, dir);
-            if (map[y2][x2] != '#' && !visited.contains(toDirectedCoordId(x2, y2, dir))) {
+            if (map[y2][x2] != '#' && !visited.contains(State.directedCoordId(x2, y2, dir))) {
                 paths.add(new int[]{x2, y2, dir, score + 1});
             }
 
             // right
             dir2 = RIGHT_TURN[dir];
-            if (map[y][x] != '#' && !visited.contains(toDirectedCoordId(x, y, dir2))) {
+            if (map[y][x] != '#' && !visited.contains(State.directedCoordId(x, y, dir2))) {
                 paths.add(new int[]{x, y, dir2, score + 1000});
             }
 
             // left
             dir2 = LEFT_TURN[dir];
-            if (map[y][x] != '#' && !visited.contains(toDirectedCoordId(x, y, dir2))) {
+            if (map[y][x] != '#' && !visited.contains(State.directedCoordId(x, y, dir2))) {
                 paths.add(new int[]{x, y, dir2, score + 1000});
             }
         }
@@ -94,14 +94,13 @@ public class Day16 extends Day {
     public String part2(String input) {
         char[][] map = input.lines().map(String::toCharArray).toArray(char[][]::new);
 
-        Queue<Holder> paths = new PriorityQueue<>(input.length(),
-            Comparator.comparing(holder -> holder.state()[SCORE]));
+        Queue<State> paths = new PriorityQueue<>(input.length(), Comparator.comparing(State::score));
 
         Map<Integer, Integer> visited = new HashMap<>();
         for (int y = 0; y < map.length; y++) {
             for (int x = 0; x < map[0].length; x++) {
                 if (map[y][x] == 'S') {
-                    paths.add(new Holder(new int[]{x, y, 3, 0}, null));
+                    paths.add(new State(x, y, 3, 0, null));
                     break;
                 }
             }
@@ -110,19 +109,18 @@ public class Day16 extends Day {
         int bestScore = -1;
         Set<Integer> allBestPathsVisited = new HashSet<>();
         while (!paths.isEmpty()) {
-            Holder h = paths.poll();
-            int[] s = h.state();
-            int x = s[X];
-            int y = s[Y];
-            int dir = s[DIR];
-            int score = s[SCORE];
+            State s = paths.poll();
+            int x = s.x();
+            int y = s.y();
+            int dir = s.dir();
+            int score = s.score();
 
             if (map[y][x] == 'E') {
                 if (bestScore == -1 || bestScore == score) {
                     bestScore = score;
-                    Holder curr = h;
+                    State curr = s;
                     while (curr != null) {
-                        allBestPathsVisited.add(toCoordId(curr.state()[X], curr.state()[Y]));
+                        allBestPathsVisited.add(curr.coordId());
                         curr = curr.prev();
                     }
                 }
@@ -130,18 +128,17 @@ public class Day16 extends Day {
             }
 
             int x2, y2, dir2, score2;
-            int[] s2;
+            State newState;
 
             // forward
             x2 = nextX(x, dir);
             y2 = nextY(y, dir);
             score2 = score + 1;
             if (map[y2][x2] != '#') {
-                Integer visitedScore = visited.get(toDirectedCoordId(x2, y2, dir));
-                s2 = new int[]{x2, y2, dir, score2};
+                Integer visitedScore = visited.get(State.directedCoordId(x2, y2, dir));
                 if (visitedScore == null || visitedScore >= score2) {
-                    paths.add(new Holder(s2, h));
-                    visited.put(toDirectedCoordId(x2, y2, dir), score2);
+                    paths.add(newState = new State(x2, y2, dir, score2, s));
+                    visited.put(newState.directedCoordId(), score2);
                 }
             }
 
@@ -149,11 +146,10 @@ public class Day16 extends Day {
             dir2 = RIGHT_TURN[dir];
             score2 = score + 1000;
             if (map[y][x] != '#') {
-                Integer visitedScore = visited.get(toDirectedCoordId(x, y, dir2));
-                s2 = new int[]{x, y, dir2, score2};
+                Integer visitedScore = visited.get(State.directedCoordId(x, y, dir2));
                 if (visitedScore == null || visitedScore >= score2) {
-                    paths.add(new Holder(s2, h));
-                    visited.put(toDirectedCoordId(x, y, dir2), score2);
+                    paths.add(newState = new State(x, y, dir2, score2, s));
+                    visited.put(newState.directedCoordId(), score2);
                 }
             }
 
@@ -161,11 +157,10 @@ public class Day16 extends Day {
             dir2 = LEFT_TURN[dir];
             score2 = score + 1000;
             if (map[y][x] != '#') {
-                Integer visitedScore = visited.get(toDirectedCoordId(x, y, dir2));
-                s2 = new int[]{x, y, dir2, score2};
+                Integer visitedScore = visited.get(State.directedCoordId(x, y, dir2));
                 if (visitedScore == null || visitedScore >= score2) {
-                    paths.add(new Holder(s2, h));
-                    visited.put(toDirectedCoordId(x, y, dir2), score2);
+                    paths.add(newState = new State(x, y, dir2, score2, s));
+                    visited.put(newState.directedCoordId(), score2);
                 }
             }
         }
@@ -174,8 +169,23 @@ public class Day16 extends Day {
 
     }
 
-    record Holder(int[] state, Holder prev) {
+    record State(int x, int y, int dir, int score, State prev) {
 
+        public int coordId() {
+            return coordId(x, y);
+        }
+
+        public int coordId(int x, int y) {
+            return x * 1000 + y;
+        }
+
+        public int directedCoordId() {
+            return directedCoordId(x, y, dir);
+        }
+
+        public static int directedCoordId(int x, int y, int dir) {
+            return x * 10_000 + y * 10 + dir;
+        }
     }
 
     public static final int[] RIGHT_TURN = new int[]{1, 2, 3, 0};
@@ -189,12 +199,5 @@ public class Day16 extends Day {
         return y + (dir == 2 ? 1 : dir == 0 ? -1 : 0);
     }
 
-    public static int toCoordId(int x, int y) {
-        return x * 1000 + y;
-    }
-
-    public static int toDirectedCoordId(int x, int y, int dir) {
-        return x * 10_000 + y * 10 + dir;
-    }
 
 }
