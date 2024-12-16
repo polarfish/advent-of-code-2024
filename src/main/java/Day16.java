@@ -13,14 +13,17 @@ public class Day16 extends Day {
 
         String sample = readFile("%s_sample.txt".formatted(day.name()));
         String sample2 = readFile("%s_sample2.txt".formatted(day.name()));
+        String sample3 = readFile("%s_sample3.txt".formatted(day.name()));
         String full = readFile("%s.txt".formatted(day.name()));
 
         assertEquals(7036, day.part1(sample));
         assertEquals(11048, day.part1(sample2));
+        assertEquals(21148, day.part1(sample3));
         assertEquals(89460, day.part1(full));
 
         assertEquals(45, day.part2(sample));
         assertEquals(64, day.part2(sample2));
+        assertEquals(149, day.part2(sample3));
         assertEquals(504, day.part2(full));
 
         day.run(full, day::part1, "Part 1 result");
@@ -42,7 +45,7 @@ public class Day16 extends Day {
         for (int y = 0; y < map.length; y++) {
             for (int x = 0; x < map[0].length; x++) {
                 if (map[y][x] == 'S') {
-                    paths.add(new int[]{x, y, 3, 0, 1});
+                    paths.add(new int[]{x, y, 1, 0, 1});
                     break;
                 }
             }
