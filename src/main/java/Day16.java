@@ -98,7 +98,7 @@ public class Day16 extends Day {
         for (int y = 0; y < map.length; y++) {
             for (int x = 0; x < map[0].length; x++) {
                 if (map[y][x] == 'S') {
-                    paths.add(new Holder(new int[]{x, y, 3, 0}, Set.of(toCoordId(x, y))));
+                    paths.add(new Holder(new int[]{x, y, 3, 0}, null));
                     break;
                 }
             }
@@ -113,12 +113,15 @@ public class Day16 extends Day {
             int y = s[Y];
             int dir = s[DIR];
             int score = s[SCORE];
-            Set<Integer> stepHistory = h.history();
 
             if (map[y][x] == 'E') {
                 if (bestScore == -1 || bestScore == score) {
                     bestScore = score;
-                    allBestPathsVisited.addAll(stepHistory);
+                    Holder curr = h;
+                    while (curr != null) {
+                        allBestPathsVisited.add(toCoordId(curr.state()[X], curr.state()[Y]));
+                        curr = curr.prev();
+                    }
                 }
                 continue;
             }
@@ -134,7 +137,7 @@ public class Day16 extends Day {
                 Integer visitedScore = visited.get(toDirectedCoordId(x2, y2, dir));
                 s2 = new int[]{x2, y2, dir, score2};
                 if (visitedScore == null || visitedScore >= score2) {
-                    paths.add(new Holder(s2, extendSet(stepHistory, toCoordId(x2, y2))));
+                    paths.add(new Holder(s2, h));
                     visited.put(toDirectedCoordId(x2, y2, dir), score2);
                 }
             }
@@ -146,7 +149,7 @@ public class Day16 extends Day {
                 Integer visitedScore = visited.get(toDirectedCoordId(x, y, dir2));
                 s2 = new int[]{x, y, dir2, score2};
                 if (visitedScore == null || visitedScore >= score2) {
-                    paths.add(new Holder(s2, extendSet(stepHistory, toCoordId(x, y))));
+                    paths.add(new Holder(s2, h));
                     visited.put(toDirectedCoordId(x, y, dir2), score2);
                 }
             }
@@ -158,7 +161,7 @@ public class Day16 extends Day {
                 Integer visitedScore = visited.get(toDirectedCoordId(x, y, dir2));
                 s2 = new int[]{x, y, dir2, score2};
                 if (visitedScore == null || visitedScore >= score2) {
-                    paths.add(new Holder(s2, extendSet(stepHistory, toCoordId(x, y))));
+                    paths.add(new Holder(s2, h));
                     visited.put(toDirectedCoordId(x, y, dir2), score2);
                 }
             }
@@ -168,7 +171,7 @@ public class Day16 extends Day {
 
     }
 
-    record Holder(int[] state, Set<Integer> history) {
+    record Holder(int[] state, Holder prev) {
 
     }
 
@@ -191,9 +194,4 @@ public class Day16 extends Day {
         return x * 10_000 + y * 10 + dir;
     }
 
-    private static Set<Integer> extendSet(Set<Integer> set, Integer i) {
-        Set<Integer> result = new HashSet<>(set);
-        result.add(i);
-        return result;
-    }
 }
