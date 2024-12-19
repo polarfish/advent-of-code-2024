@@ -1,9 +1,8 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Day19 extends Day {
 
@@ -26,96 +25,63 @@ public class Day19 extends Day {
 
     @Override
     public String part1(String input) {
-        String[] split = input.split("\n\n");
-        List<String> patterns = Arrays.stream(split[0].split(", ")).toList();
-        List<String> designs = Arrays.stream(split[1].split("\n")).toList();
-
-        TrieNode root = new TrieNode();
-        patterns.forEach(root::insert);
-        int[] sizeMap = new int[patterns.stream().mapToInt(String::length).max().orElse(0) + 1];
-        Set<String> noMemo = new HashSet<>();
-
-        long result = designs.stream()
-            .filter(design -> isDesignPossible(design, 0, root, sizeMap, noMemo))
-            .count();
+        Day19Input in = parseInput(input);
+        TrieNode root = new TrieNode(in.patterns());
+        Map<String, Long> memo = new HashMap<>();
+        long result = in.designs().stream()
+            .mapToLong(design -> countCombinations(design, 0, root, memo, true))
+            .sum();
 
         return String.valueOf(result);
     }
 
     @Override
     public String part2(String input) {
-        String[] split = input.split("\n\n");
-        List<String> patterns = Arrays.stream(split[0].split(", ")).toList();
-        List<String> designs = Arrays.stream(split[1].split("\n")).toList();
-
-        TrieNode root = new TrieNode();
-        patterns.forEach(root::insert);
-        int[] sizeMap = new int[patterns.stream().mapToInt(String::length).max().orElse(0) + 1];
-        Set<String> noMemo = new HashSet<>();
-        Map<String, Long> yesMemo = new HashMap<>();
-
-        long result = designs.stream()
-            .mapToLong(design -> countCombinations(design, 0, root, sizeMap, noMemo, yesMemo))
+        Day19Input in = parseInput(input);
+        TrieNode root = new TrieNode(in.patterns());
+        Map<String, Long> memo = new HashMap<>();
+        long result = in.designs().stream()
+            .mapToLong(design -> countCombinations(design, 0, root, memo, false))
             .sum();
 
         return String.valueOf(result);
     }
 
-    private long countCombinations(String design, int offset, TrieNode root, int[] sizeMap, Set<String> noMemo,
-        Map<String, Long> yesMemo) {
+    record Day19Input(List<String> patterns, List<String> designs) {
+
+    }
+
+    private Day19Input parseInput(String input) {
+        String[] split = input.split("\n\n");
+        return new Day19Input(
+            Arrays.stream(split[0].split(", ")).toList(),
+            Arrays.stream(split[1].split("\n")).toList()
+        );
+    }
+
+    private long countCombinations(String design, int offset, TrieNode root,
+        Map<String, Long> memo, boolean stopOnFirstResult) {
         if (design.length() == offset) {
-            yesMemo.put(design, 1L);
+            memo.put(design, 1L);
             return 1;
         }
         String designPart = design.substring(offset);
-        if (noMemo.contains(designPart)) {
-            return 0;
-        }
-        if (yesMemo.containsKey(designPart)) {
-            return yesMemo.get(designPart);
+        if (memo.containsKey(designPart)) {
+            return memo.get(designPart);
         }
 
         long result = 0L;
 
-        int[] sizeMap2 = Arrays.copyOf(sizeMap, sizeMap.length);
-        int biggestPatternSize = root.findStartingPatterns(design, offset, sizeMap2);
-
-        for (int s = biggestPatternSize; s > 0; s--) {
-            if (sizeMap2[s] == 1) {
-                result += countCombinations(design, offset + s, root, sizeMap, noMemo, yesMemo);
+        for (Integer s : root.findStartPatternsSizes(design, offset).reversed()) {
+            result += countCombinations(design, offset + s, root, memo, stopOnFirstResult);
+            if (result > 0 && stopOnFirstResult) {
+                break;
             }
         }
 
-        if (result == 0) {
-            noMemo.add(designPart);
-        } else {
-            yesMemo.put(designPart, result);
-        }
+        memo.put(designPart, result);
 
         return result;
-    }
-
-    private boolean isDesignPossible(String design, int offset, TrieNode root, int[] sizeMap, Set<String> noMemo) {
-        if (design.length() == offset) {
-            return true;
-        }
-
-        String designPart = design.substring(offset);
-        if (noMemo.contains(designPart)) {
-            return false;
-        }
-
-        int[] sizeMap2 = Arrays.copyOf(sizeMap, sizeMap.length);
-        int biggestPatternSize = root.findStartingPatterns(design, offset, sizeMap2);
-
-        for (int s = biggestPatternSize; s > 0; s--) {
-            if (sizeMap2[s] == 1 && isDesignPossible(design, offset + s, root, sizeMap, noMemo)) {
-                return true;
-            }
-        }
-
-        noMemo.add(designPart);
-        return false;
     }
 
 
@@ -123,6 +89,13 @@ public class Day19 extends Day {
 
         private final Map<Character, TrieNode> children = new HashMap<>();
         private boolean isWord;
+
+        public TrieNode() {
+        }
+
+        public TrieNode(List<String> patterns) {
+            patterns.forEach(this::insert);
+        }
 
         public void insert(String word) {
             TrieNode current = this;
@@ -133,17 +106,18 @@ public class Day19 extends Day {
             current.isWord = true;
         }
 
-        public int findStartingPatterns(String design, int offset, int[] sizeMap) {
+        public List<Integer> findStartPatternsSizes(String design, int offset) {
+            List<Integer> result = new ArrayList<>();
             TrieNode current = this;
             int size = 0;
             while (offset + size < design.length()
                 && (current = current.children.get(design.charAt(offset + size))) != null) {
                 size++;
                 if (current.isWord) {
-                    sizeMap[size] = 1;
+                    result.add(size);
                 }
             }
-            return size;
+            return result;
         }
     }
 }
