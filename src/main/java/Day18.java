@@ -46,11 +46,22 @@ public class Day18 extends Day {
 
         int[] blockingByte = null;
         int[][] visited = new int[GRID_SIZE][GRID_SIZE];
+        for (int[] line : visited) {
+            Arrays.fill(line, 2);
+        }
+
+        int[] res = null;
         for (int i = 0; i < bytes.length; i++) {
-            map[bytes[i][Y]][bytes[i][X]] = 1;
-            if (i >= 1024 && findWayOutDFS(map, visited) == null) {
-                blockingByte = bytes[i];
-                break;
+            int[] fallingByte = bytes[i];
+            map[fallingByte[Y]][fallingByte[X]] = 1;
+            if (i >= 1024) {
+                if (visited[fallingByte[Y]][fallingByte[X]] == 2) {
+                    res = findWayOutDFS(map, visited);
+                }
+                if (res == null) {
+                    blockingByte = fallingByte;
+                    break;
+                }
             }
         }
 
@@ -121,11 +132,14 @@ public class Day18 extends Day {
             Arrays.fill(line, 0);
         }
         visited[0][0] = 1;
-        return findWayOutDFS(map, visited, 0, 0, 0);
+        int[] res = findWayOutDFS(map, visited, 0, 0, 0);
+        visited[0][0] = 2;
+        return res;
     }
 
     private static int[] findWayOutDFS(int[][] map, int[][] visited, int x, int y, int steps) {
         if (x == 70 && y == 70) {
+            visited[y][x] = 2;
             return new int[]{x, y, steps};
         }
 
@@ -139,6 +153,7 @@ public class Day18 extends Day {
             visited[y][x2] = 1;
             pos = findWayOutDFS(map, visited, x2, y, steps + 1);
             if (pos != null) {
+                visited[y][x] = 2;
                 return pos;
             }
         }
@@ -149,6 +164,7 @@ public class Day18 extends Day {
             visited[y2][x] = 1;
             pos = findWayOutDFS(map, visited, x, y2, steps + 1);
             if (pos != null) {
+                visited[y][x] = 2;
                 return pos;
             }
         }
@@ -159,6 +175,7 @@ public class Day18 extends Day {
             visited[y][x2] = 1;
             pos = findWayOutDFS(map, visited, x2, y, steps + 1);
             if (pos != null) {
+                visited[y][x] = 2;
                 return pos;
             }
         }
@@ -169,6 +186,7 @@ public class Day18 extends Day {
             visited[y2][x] = 1;
             pos = findWayOutDFS(map, visited, x, y2, steps + 1);
             if (pos != null) {
+                visited[y][x] = 2;
                 return pos;
             }
         }
