@@ -84,7 +84,7 @@ public class Day19 extends Day {
 
     public static class TrieNode {
 
-        private final Map<Character, TrieNode> children = new HashMap<>();
+        private final TrieNode[] children = new TrieNode[26];
         private boolean isWord;
 
         public TrieNode() {
@@ -98,7 +98,11 @@ public class Day19 extends Day {
             TrieNode current = this;
 
             for (int i = 0; i < word.length(); i++) {
-                current = current.children.computeIfAbsent(word.charAt(i), c -> new TrieNode());
+                int ind = word.charAt(i) - 'a';
+                if (current.children[ind] == null) {
+                    current.children[ind] = new TrieNode();
+                }
+                current = current.children[ind];
             }
             current.isWord = true;
         }
@@ -107,10 +111,10 @@ public class Day19 extends Day {
             List<Integer> result = new ArrayList<>();
             TrieNode current = this;
             int size = 0;
-            while (size < design.length() && (current = current.children.get(design.charAt(size))) != null) {
+            while (size < design.length() && (current = current.children[design.charAt(size) - 'a']) != null) {
                 size++;
                 if (current.isWord) {
-                    result.addLast(size);
+                    result.add(size);
                 }
             }
             return result;
