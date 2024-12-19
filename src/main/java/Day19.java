@@ -29,7 +29,7 @@ public class Day19 extends Day {
         TrieNode root = new TrieNode(in.patterns());
         Map<String, Long> memo = new HashMap<>();
         long result = in.designs().stream()
-            .mapToLong(design -> countCombinations(design, 0, root, memo, true))
+            .mapToLong(design -> countCombinations(design, root, memo, true))
             .sum();
 
         return String.valueOf(result);
@@ -41,7 +41,7 @@ public class Day19 extends Day {
         TrieNode root = new TrieNode(in.patterns());
         Map<String, Long> memo = new HashMap<>();
         long result = in.designs().stream()
-            .mapToLong(design -> countCombinations(design, 0, root, memo, false))
+            .mapToLong(design -> countCombinations(design, root, memo, false))
             .sum();
 
         return String.valueOf(result);
@@ -59,30 +59,25 @@ public class Day19 extends Day {
         );
     }
 
-    private long countCombinations(String design, int offset, TrieNode root,
-        Map<String, Long> memo, boolean stopOnFirstResult) {
-        if (design.length() == offset) {
-            memo.put(design, 1L);
+    private long countCombinations(String design, TrieNode root, Map<String, Long> memo, boolean stopOnFirstResult) {
+        if (design.isEmpty()) {
             return 1;
         }
-        String designPart = design.substring(offset);
-        if (memo.containsKey(designPart)) {
-            return memo.get(designPart);
+
+        if (memo.containsKey(design)) {
+            return memo.get(design);
         }
 
         long result = 0L;
-
-        List<Integer> sizes = root.findStartPatternsSizes(design, offset);
-
+        List<Integer> sizes = root.findStartPatternsSizes(design);
         for (Integer s : stopOnFirstResult ? sizes.reversed() : sizes) {
-            result += countCombinations(design, offset + s, root, memo, stopOnFirstResult);
+            result += countCombinations(design.substring(s), root, memo, stopOnFirstResult);
             if (result > 0 && stopOnFirstResult) {
                 break;
             }
         }
 
-        memo.put(designPart, result);
-
+        memo.put(design, result);
         return result;
     }
 
@@ -108,12 +103,11 @@ public class Day19 extends Day {
             current.isWord = true;
         }
 
-        public List<Integer> findStartPatternsSizes(String design, int offset) {
+        public List<Integer> findStartPatternsSizes(String design) {
             List<Integer> result = new ArrayList<>();
             TrieNode current = this;
             int size = 0;
-            while (offset + size < design.length()
-                && (current = current.children.get(design.charAt(offset + size))) != null) {
+            while (size < design.length() && (current = current.children.get(design.charAt(size))) != null) {
                 size++;
                 if (current.isWord) {
                     result.addLast(size);
