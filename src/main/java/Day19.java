@@ -72,7 +72,9 @@ public class Day19 extends Day {
 
         long result = 0L;
 
-        for (Integer s : root.findStartPatternsSizes(design, offset).reversed()) {
+        List<Integer> sizes = root.findStartPatternsSizes(design, offset);
+
+        for (Integer s : stopOnFirstResult ? sizes.reversed() : sizes) {
             result += countCombinations(design, offset + s, root, memo, stopOnFirstResult);
             if (result > 0 && stopOnFirstResult) {
                 break;
@@ -114,7 +116,7 @@ public class Day19 extends Day {
                 && (current = current.children.get(design.charAt(offset + size))) != null) {
                 size++;
                 if (current.isWord) {
-                    result.add(size);
+                    result.addLast(size);
                 }
             }
             return result;
