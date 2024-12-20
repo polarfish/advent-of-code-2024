@@ -155,7 +155,7 @@ public class Day20 extends Day {
         List<int[]> path = new ArrayList<>();
         int[] curr;
         int[] prev = {-1, -1};
-        path.add(curr = start); k
+        path.add(curr = start);
         while (!(curr[X] == end[X] && curr[Y] == end[Y])) {
             int x = curr[X];
             int y = curr[Y];
