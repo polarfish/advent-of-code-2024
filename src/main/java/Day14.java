@@ -1,10 +1,7 @@
 import static java.lang.Integer.parseInt;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class Day14 extends Day {
 
@@ -35,26 +32,8 @@ public class Day14 extends Day {
         int w = robots.size() < 100 ? 11 : 101;
         int h = robots.size() < 100 ? 7 : 103;
 
-        int result = robots.stream()
-            .peek(r -> moveRobot(r, w, h, 100))
-            .collect(Collectors.groupingBy(
-                r -> {
-                    if (r[PY] == h / 2 || r[PX] == w / 2) {
-                        return 0;
-                    } else if (r[PY] < h / 2) {
-                        return r[PX] < w / 2 ? 1 : 2;
-                    } else {
-                        return r[PX] < w / 2 ? 3 : 4;
-                    }
-                },
-                Collectors.counting()
-            ))
-            .entrySet()
-            .stream()
-            .filter(e -> e.getKey() != 0)
-            .map(Entry::getValue)
-            .mapToInt(Long::intValue)
-            .reduce(1, (a, b) -> a * b);
+        robots.forEach(r -> moveRobot(r, w, h, 100));
+        int result = calculateSafetyFactor(robots, w, h);
 
         return String.valueOf(result);
     }
@@ -64,13 +43,15 @@ public class Day14 extends Day {
         List<int[]> robots = parseRobots(input);
         int w = robots.size() < 100 ? 11 : 101;
         int h = robots.size() < 100 ? 7 : 103;
-        int[][] map = new int[h][w];
 
+        int initialSafetyFactor = calculateSafetyFactor(robots, w, h);
+        int safetyFactor;
         int s = 0;
         do {
             s++;
             robots.forEach(r -> moveRobot(r, w, h, 1));
-        } while (!hasLongLines(robots, map, w, h) && s < 1_000_000);
+            safetyFactor = calculateSafetyFactor(robots, w, h);
+        } while (Math.abs(initialSafetyFactor - safetyFactor) < 130_000_000);
 
         return String.valueOf(s);
     }
@@ -92,32 +73,22 @@ public class Day14 extends Day {
             .toList();
     }
 
-    private boolean hasLongLines(List<int[]> robots, int[][] map, int w, int h) {
-        for (int[] line : map) {
-            Arrays.fill(line, 0);
-        }
-        robots.forEach(r -> map[r[PY]][r[PX]]++);
+    private static int calculateSafetyFactor(List<int[]> robots, int w, int h) {
+        int[] quadrants = new int[5];
 
-        int longestLine = 0;
-        for (int y = 0; y < h; y++) {
-            boolean isLine = false;
-            int currentLine = 0;
-            for (int x = 0; x < w; x++) {
-                if (map[y][x] == 0) {
-                    if (isLine) {
-                        longestLine = Math.max(longestLine, currentLine);
-                        currentLine = 0;
-                        isLine = false;
-                    }
-                } else if (!isLine) {
-                    isLine = true;
-                    currentLine = 1;
-                } else {
-                    currentLine++;
-                }
+        int index;
+        for (int[] r : robots) {
+            if (r[PY] == h / 2 || r[PX] == w / 2) {
+                index = 0;
+            } else if (r[PY] < h / 2) {
+                index = r[PX] < w / 2 ? 1 : 2;
+            } else {
+                index = r[PX] < w / 2 ? 3 : 4;
             }
+            quadrants[index]++;
         }
 
-        return longestLine > 10;
+        return quadrants[1] * quadrants[2] * quadrants[3] * quadrants[4];
     }
+
 }
