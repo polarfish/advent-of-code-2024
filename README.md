@@ -21,3 +21,4 @@
 - [Day 17](src/main/java/Day17.java)
 - [Day 18](src/main/java/Day18.java)
 - [Day 19](src/main/java/Day19.java)
+- [Day 20](src/main/java/Day20.java)
