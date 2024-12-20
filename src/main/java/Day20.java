@@ -135,8 +135,7 @@ public class Day20 extends Day {
     }
 
     private static char[][] parseMap(String input) {
-        char[][] map = input.lines().map(String::toCharArray).toArray(char[][]::new);
-        return map;
+        return input.lines().map(String::toCharArray).toArray(char[][]::new);
     }
 
     private static int calculateShortcuts(char[][] map, int shortcutMaxSize) {
@@ -156,7 +155,7 @@ public class Day20 extends Day {
         List<int[]> path = new ArrayList<>();
         int[] curr;
         int[] prev = {-1, -1};
-        path.add(curr = start);
+        path.add(curr = start); k
         while (!(curr[X] == end[X] && curr[Y] == end[Y])) {
             int x = curr[X];
             int y = curr[Y];
