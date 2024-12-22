@@ -28,9 +28,9 @@ public class Day22 extends Day {
         long result = input.lines().mapToLong(Long::parseLong)
             .map(n -> {
                 for (int i = 0; i < 2000; i++) {
-                    n = (n ^ (n << 6)) % 16777216;
-                    n = (n ^ (n >> 5)) % 16777216;
-                    n = (n ^ (n << 11)) % 16777216;
+                    n = (n ^ (n << 6)) & 16777215;
+                    n = (n ^ (n >> 5)) & 16777215;
+                    n = (n ^ (n << 11)) & 16777215;
                 }
                 return n;
             })
@@ -50,9 +50,9 @@ public class Day22 extends Day {
                 int p, p2;
                 Map<Marker, Integer> currents = new HashMap<>(3000);
                 for (int i = 0; i < 2000; i++, n = n2) {
-                    n2 = (n2 ^ (n2 << 6)) % 16777216;
-                    n2 = (n2 ^ (n2 >> 5)) % 16777216;
-                    n2 = (n2 ^ (n2 << 11)) % 16777216;
+                    n2 = (n2 ^ (n2 << 6)) & 16777215;
+                    n2 = (n2 ^ (n2 >> 5)) & 16777215;
+                    n2 = (n2 ^ (n2 << 11)) & 16777215;
 
                     p = (int) (n % 10);
                     p2 = (int) (n2 % 10);
