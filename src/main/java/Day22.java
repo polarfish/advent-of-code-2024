@@ -58,7 +58,7 @@ public class Day22 extends Day {
                     p2 = (int) (n2 % 10);
 
                     seq.add(p2 - p);
-                    if (seq.size() > 4) {
+                    if (seq.size() == 4) {
 
                         Marker marker = new Marker(seq.get(0), seq.get(1), seq.get(2), seq.get(3));
 
