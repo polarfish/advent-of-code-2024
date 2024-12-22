@@ -48,7 +48,7 @@ public class Day22 extends Day {
             .forEach(n -> {
                 long n2 = n;
                 int p, p2;
-                Map<Marker, Integer> currents = new HashMap<>();
+                Map<Marker, Integer> currents = new HashMap<>(3000);
                 for (int i = 0; i < 2000; i++, n = n2) {
                     n2 = (n2 ^ (n2 << 6)) % 16777216;
                     n2 = (n2 ^ (n2 >> 5)) % 16777216;
