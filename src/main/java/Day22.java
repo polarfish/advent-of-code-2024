@@ -77,9 +77,7 @@ public class Day22 extends Day {
         return String.valueOf(result);
     }
 
+    record Marker(int d1, int d2, int d3, int d4) {
 
-}
-
-record Marker(int d1, int d2, int d3, int d4) {
-
+    }
 }
