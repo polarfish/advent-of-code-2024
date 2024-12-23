@@ -1,15 +1,16 @@
-import java.util.ArrayDeque;
+import static java.util.Collections.emptyList;
+import static java.util.function.Predicate.not;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Day23 extends Day {
 
@@ -32,12 +33,7 @@ public class Day23 extends Day {
 
     @Override
     public String part1(String input) {
-        Map<String, Set<String>> map = new HashMap<>();
-
-        input.lines().map(line -> line.split("-")).forEach(s -> {
-            map.computeIfAbsent(s[0], k -> new HashSet<>()).add(s[1]);
-            map.computeIfAbsent(s[1], k -> new HashSet<>()).add(s[0]);
-        });
+        Map<String, Set<String>> map = parseInput(input);
 
         Set<String> result = new HashSet<>();
         for (Entry<String, Set<String>> e : map.entrySet()) {
@@ -69,47 +65,65 @@ public class Day23 extends Day {
         return String.valueOf(result.size());
     }
 
-
     @Override
     public String part2(String input) {
+        Map<String, Set<String>> map = parseInput(input);
+
+        int maxPossibleGroup = map.values().stream().mapToInt(Set::size).max().orElse(0);
+
+        Set<String> checked = new HashSet<>();
+        Set<String> memo = new HashSet<>();
+        List<String> best = new ArrayList<>();
+        List<String> result = map.keySet().stream()
+            .takeWhile(s -> best.size() < maxPossibleGroup)
+            .map(computer -> {
+                checked.add(computer);
+                List<String> res = dfs(map, List.of(computer), checked, memo);
+                if (res.size() > best.size()) {
+                    best.clear();
+                    best.addAll(res);
+                }
+                return res;
+            })
+            .max(Comparator.comparingInt(List::size))
+            .orElse(Collections.emptyList());
+
+        return String.join(",", result);
+    }
+
+    private static Map<String, Set<String>> parseInput(String input) {
         Map<String, Set<String>> map = new HashMap<>();
-
-        HashSet<String> seen = new HashSet<>();
-        Queue<List<String>> q = new ArrayDeque<>();
-
         input.lines().map(line -> line.split("-")).forEach(s -> {
-            Arrays.sort(s);
-            q.add(Arrays.asList(s));
             map.computeIfAbsent(s[0], k -> new HashSet<>()).add(s[1]);
             map.computeIfAbsent(s[1], k -> new HashSet<>()).add(s[0]);
         });
+        return map;
+    }
 
-        List<String> biggestGroup = new ArrayList<>();
-        while (!q.isEmpty()) {
-            List<String> group = q.poll();
-            Set<String> intersection = group.stream().map(map::get)
-                .reduce((s, s2) -> s.stream().filter(s2::contains).collect(Collectors.toSet()))
-                .orElse(Collections.emptySet());
-            intersection.forEach(e -> {
-                List<String> next = new ArrayList<>(group);
-                next.add(e);
-
-                String token = String.join(",", next);
-                if (seen.contains(token)) {
-                    return;
-                }
-                seen.add(token);
-
-                next.sort(String::compareTo);
-                q.add(next);
-                if (next.size() > biggestGroup.size()) {
-                    biggestGroup.clear();
-                    biggestGroup.addAll(next);
-                }
-            });
+    private List<String> dfs(Map<String, Set<String>> map, List<String> group, Set<String> checked, Set<String> memo) {
+        if (group.size() == 13) {
+            return group;
         }
 
-        return String.join(",", biggestGroup);
+        Set<String> connections = new HashSet<>(map.get(group.getFirst()));
+        for (int i = 1; i < group.size(); i++) {
+            connections.retainAll(map.get(group.get(i)));
+        }
+
+        List<String> result = connections.stream()
+            .filter(not(checked::contains))
+            .map(conn -> {
+                List<String> next = new ArrayList<>(group);
+                next.add(conn);
+                next.sort(String::compareTo);
+                return memo.add(String.join(",", next))
+                    ? dfs(map, next, checked, memo)
+                    : Collections.<String>emptyList();
+            })
+            .max(Comparator.comparingInt(List::size))
+            .orElse(emptyList());
+
+        return result.size() > group.size() ? result : group;
     }
 
 }
