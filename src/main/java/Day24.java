@@ -25,13 +25,30 @@ public class Day24 extends Day {
 
     @Override
     public String part1(String input) {
-
-        Device device = new Device(new HashMap<>());
-
         String[] split = input.split("\n\n");
+        long[] ini = parseInitialValues(split);
+        Device device = parseDeviceLogic(split);
+
+        return String.valueOf(device.run(ini[0], ini[1]));
+    }
+
+    @Override
+    public String part2(String input) {
+        return "0";
+    }
+
+    private static Device parseDeviceLogic(String[] split) {
+        Device device = new Device(new HashMap<>());
+        split[1].lines().forEach(line -> {
+            String[] s = line.split(" ");
+            device.addGate(s[4], s[0], s[1], s[2]);
+        });
+        return device;
+    }
+
+    private static long[] parseInitialValues(String[] split) {
         long x = 0L;
         long y = 0L;
-
         for (String line : split[0].split("\n")) {
             String[] s = line.split(": ");
 
@@ -45,18 +62,7 @@ public class Day24 extends Day {
                 }
             }
         }
-
-        split[1].lines().forEach(line -> {
-            String[] s = line.split(" ");
-            device.addGate(s[4], s[0], s[1], s[2]);
-        });
-
-        return String.valueOf(device.run(x, y));
-    }
-
-    @Override
-    public String part2(String input) {
-        return "0";
+        return new long[]{x, y};
     }
 
     record Device(Map<String, List<String>> gates) {
